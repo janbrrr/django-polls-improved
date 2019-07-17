@@ -6,6 +6,12 @@ import sys
 
 def main():
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "mysite.settings")
+
+    # Build the Sphinx documentation when 'python manage.py runserver' is run (only on initial start, not on restart!)
+    if sys.argv[1] == "runserver" and os.environ.get("RUN_MAIN", None) != "true":  # use == "true" for on restart
+        os.chdir("docs")
+        os.system("make html")
+        os.chdir("..")
     try:
         from django.core.management import execute_from_command_line
     except ImportError as exc:

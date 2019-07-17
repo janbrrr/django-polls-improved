@@ -8,13 +8,14 @@ The improvements mainly concern the setup.
 ## Overview of Improvements
 
 - [Pre-commit hooks](#pre-commit-hooks)
+- [Sphinx documentation](#sphinx-docs)
 
 # <a name="requirements-and-installation"/>Requirements & Installation
 
 This project was written using Python 3.7, Django 2.2 and Ubuntu 18.04.
 
 First, set up a virtual environment.
-1. Change the directory to this project's root and type `python -m venv venv` to create a virtual environment named `venv`
+1. Change the directory to this project's root and type `python3.7 -m venv venv` to create a virtual environment named `venv`
 2. Activate the virtual environment (`(venv)` should appear before the directory)
     1. On Windows: `venv\Scripts\activate`
     2. On Linux: `source venv/bin/activate`
@@ -42,3 +43,19 @@ Pre-commit hooks only use the files staged for commit, to run it on every file t
 Note that if a file is reformatted during a commit, the commit will fail. The consequence is that
 you will have to *commit twice* in general. The first commit will fail and format the files, the second commit
 validates that the files are formatted and goes through.
+
+# <a name="sphinx-docs"/>Sphinx documentation
+
+The documentation is build using [Sphinx](http://www.sphinx-doc.org) with the 
+[Read the Docs Theme](https://sphinx-rtd-theme.readthedocs.io).
+
+First, a new app called `docs` is created with `python manage.py startapp docs`
+and this app is added to the `INSTALLED_APPS` in `mysite.settings`.
+Next, sphinx is set up via `sphinx-quickstart` and the created file in `docs/source/conf.py` is
+configured to use the correct Django settings to allow for autodoc. This requires us to exclude the file
+for the pre-commit hooks as isort and flake8 will complain.
+
+The docs will be served at the `/docs/` url as configured in `docs/urls.py` via Django's built-in 
+[static.serve](https://docs.djangoproject.com/en/2.2/_modules/django/views/static/) view.
+
+For convenience, `manage.py` is changed to run `make html` whenever `manage.py runserver` is run.

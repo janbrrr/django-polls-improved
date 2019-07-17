@@ -11,3 +11,6 @@ venv/
 # Django
 migrations/
 db.sqlite3
+
+# Documentation
+docs/build/
