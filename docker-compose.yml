@@ -1,0 +1,47 @@
+version: '3.7'
+
+services:
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: gunicorn mysite.wsgi:application --workers 3 --bind 0.0.0.0:8000
+    volumes:
+    - static_volume:/usr/src/app/static
+    - migrations_volume:/usr/src/app/migrations
+    expose:
+    - 8000
+    env_file: .env
+    depends_on:
+    - db
+    - memcached
+
+  db:
+    image: postgres:11.2-alpine
+    volumes:
+    - postgres_data:/var/lib/postgresql/data/
+    env_file: .env.db
+
+  nginx:
+    build: ./nginx
+    volumes:
+    - static_volume:/usr/src/app/static
+    ports:
+    - 80:80
+    - 443:443
+    depends_on:
+    - web
+
+  memcached:
+    image: memcached:1.5.16-alpine
+    expose:
+    - 11211
+    entrypoint:
+    - memcached
+    - -m 64
+
+volumes:
+  postgres_data:
+  static_volume:
+  migrations_volume:

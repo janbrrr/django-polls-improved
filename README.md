@@ -9,6 +9,7 @@ The improvements mainly concern the setup.
 
 - [Pre-commit hooks](#pre-commit-hooks)
 - [Sphinx documentation](#sphinx-docs)
+- [Docker and Docker Compose](#docker)
 
 # <a name="requirements-and-installation"/>Requirements & Installation
 
@@ -59,3 +60,103 @@ The docs will be served at the `/docs/` url as configured in `docs/urls.py` via 
 [static.serve](https://docs.djangoproject.com/en/2.2/_modules/django/views/static/) view.
 
 For convenience, `manage.py` is changed to run `make html` whenever `manage.py runserver` is run.
+
+# <a name="docker"/>Docker and Docker Compose
+
+This section requires [Docker](https://docs.docker.com/install/) and 
+[Docker Compose](https://docs.docker.com/compose/install/). 
+It was developed using Docker v18.09.7 and Docker Compose v1.24.0 and is based on 
+[this blog post by Michael Herman](https://testdriven.io/blog/dockerizing-django-with-postgres-gunicorn-and-nginx/).
+
+The basic Docker commands are:
+
+- `docker-compose up -d --build` to build and start the services
+- `docker-compose down` to shutdown the services
+- `docker-compose logs` to view the logs
+- `docker-compose exec web python manage.py createsuperuser` to create a superuser
+
+Note that you have to visit `https://localhost/polls/` or some other page as the polls example
+does not define a view at `https://localhost`.
+
+We distinguish four services in the `docker-compose.yml` file:
+
+- web: Django and [Gunicorn](https://gunicorn.org/)
+- db: [Postgres](https://www.postgresql.org/)
+- nginx: [NGINX](https://www.nginx.com/)
+- memcached: [Memcached](https://memcached.org/)
+
+This setup requires additional dependencies for the Django application, therefore a `requirements-prod.txt` is added.
+
+The next step is to split the settings into development and production settings, because secrets like
+the (production) secret key and the database credentials should be defined in environment
+variables and not be hard-coded in the settings. 
+The settings are split into `settings/base.py`, `settings/development.py` and `settings/production.py`.
+By default `settings/__init__.py` will import the base settings and try to import the development settings.
+If the import fails, production settings will be used. 
+In other words, to use the production settings, `settings/development.py` will be deleted in the `Dockerfile`.
+
+In order to handle database migrations more easily they will be gathered in the same directory `migrations/`.
+This means that the migrations will no longer be located in `<app-name>/migrations/`, but in `migrations/<app-name>/`.
+This way they can be stored in a docker volume. The changes are in `settings/base.py`.
+
+### web service
+
+The `Dockerfile` for the web service is in the root directory and it uses `entrypoint.sh` as entrypoint.
+
+As specified in `docker-compose.yml` the web service uses two volumes: one for the *static files*
+and one for the *migrations*. The volume with the static files will be shared with the nginx service.
+
+The `docker-compose.yml` also specifies that the web service uses an evironment file named `.env`.
+It should contain the secret key and the database credentials (and should not be committed).
+Below is an example. Note that the `SQL_HOST` is `db`, because Docker Compose creates a virtual
+network with all the services and the database service is named as `db`.
+
+```
+# .env
+SECRET_KEY=change_me
+SQL_ENGINE=django.db.backends.postgresql
+SQL_DATABASE=hello_django_prod
+SQL_USER=hello_django
+SQL_PASSWORD=hello_django
+SQL_HOST=db
+SQL_PORT=5432
+DATABASE=postgres
+```
+
+### db service
+
+The db service does not need a Dockerfile as the postgres image contains everything we need.
+The only thing is missing is an environment file containing the configuration of the database.
+We create a file called `.env.db` in the root directory that looks as follows. Make sure it matches the config
+for the web service.
+
+```
+# .env.db
+POSTGRES_USER=hello_django
+POSTGRES_PASSWORD=hello_django
+POSTGRES_DB=hello_django_prod
+```
+
+Note that the `docker-compose.yml` file configures the db service to use a volume to keep the data persistent.
+
+### nginx service
+
+The nginx service requires additional configuration. The files are located at `nginx/`.
+First, there is the NGINX configuration at `nginx/nginx.conf` and then the `nginx/Dockerfile`
+that replaces the default config with our configuration. Note that it connects to `web:8000`,
+as exposed via the `docker-compose.yml` file.
+
+Moreover, the `nginx.conf` file uses SSL and the `Dockerfile` expects the certificate to be in
+`nginx/my_cert.pem` and the private key to be located at `nginx/my_key.pem`. 
+Note the port mappings `80:80` and `443:443` in `docker-compose.yml`.
+
+You can create a self-signed certificate with the following command:
+
+`openssl req -x509 -newkey rsa:4096 -keyout nginx/my_key.pem -out nginx/my_cert.pem -days 365 --nodes`
+
+### memcached service
+
+The official memcached image already contains everything, so no further files are necessary.
+The only thing we have to do is to configure `mysite/settings/production.py` to use the correct host.
+Again, according to `docker-compose.yml` this service is called `memcached` and it exposes the (default) `11211` port,
+therefore the location of the cache server is `memcached:11211`.

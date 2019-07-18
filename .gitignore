@@ -14,3 +14,11 @@ db.sqlite3
 
 # Documentation
 docs/build/
+
+# Environment Files
+.env
+.env.db
+
+# SSL
+nginx/my_key.pem
+nginx/my_cert.pem

@@ -1,0 +1,4 @@
+# Docs build directory
+docs/build*
+# Migrations
+migrations/*

@@ -13,7 +13,7 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 import os
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 
 # Quick-start development settings - unsuitable for production
@@ -82,24 +82,33 @@ DATABASES = {
     }
 }
 
+# Migrations
+# https://docs.djangoproject.com/en/2.2/ref/settings/#migration-modules
 
-# Password validation
-# https://docs.djangoproject.com/en/2.2/ref/settings/#auth-password-validators
+# Create migration directories
+MIGRATIONS_DIR = os.path.join(BASE_DIR, "migrations")
+MIGRATIONS_POLLS_DIR = os.path.join(MIGRATIONS_DIR, "polls")
+MIGRATIONS_DOCS_DIR = os.path.join(MIGRATIONS_DIR, "docs")
+if not os.path.exists(MIGRATIONS_POLLS_DIR):
+    os.makedirs(MIGRATIONS_POLLS_DIR)
+if not os.path.exists(MIGRATIONS_DOCS_DIR):
+    os.makedirs(MIGRATIONS_DOCS_DIR)
 
-AUTH_PASSWORD_VALIDATORS = [
-    {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
-]
+# Map migration directories
+MIGRATION_MODULES = {
+    'polls': 'migrations.polls',
+    'docs': 'migrations.docs',
+}
+
+# Caches
+# https://docs.djangoproject.com/en/2.2/topics/cache/#database-caching
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'unique_cache_table_name',
+    }
+}
 
 
 # Internationalization
@@ -120,3 +129,4 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
 
 STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
