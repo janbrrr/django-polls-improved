@@ -25,6 +25,8 @@ First, set up a virtual environment.
 
 # <a name="pre-commit-hooks"/>Pre-commit hooks
 
+[Commit 4358963947ee1c0059fce758f2c435acabcab4e0](https://github.com/janbrrr/django-polls-improved/commit/4358963947ee1c0059fce758f2c435acabcab4e0)
+
 Pre-commit hooks are a way to execute hooks before every commit. For example, to format
 your code before every commit. To do this we use the [pre-commit framework](https://pre-commit.com/), which can 
 be installed via `pip install pre-commit`.
@@ -48,6 +50,8 @@ validates that the files are formatted and goes through.
 
 # <a name="sphinx-docs"/>Sphinx documentation
 
+[Commit f757f954d576662f7b87476201d1931fa4208420](https://github.com/janbrrr/django-polls-improved/commit/f757f954d576662f7b87476201d1931fa4208420)
+
 The documentation is build using [Sphinx](http://www.sphinx-doc.org) with the 
 [Read the Docs Theme](https://sphinx-rtd-theme.readthedocs.io).
 
@@ -63,6 +67,8 @@ The docs will be served at the `/docs/` url as configured in `docs/urls.py` via 
 For convenience, `manage.py` is changed to run `make html` whenever `manage.py runserver` is run.
 
 # <a name="docker"/>Docker and Docker Compose
+
+[Commit 23bbdd4cb6887981f00df3acd4a4478003be209d](https://github.com/janbrrr/django-polls-improved/commit/23bbdd4cb6887981f00df3acd4a4478003be209d)
 
 This section requires [Docker](https://docs.docker.com/install/) and 
 [Docker Compose](https://docs.docker.com/compose/install/). 
@@ -163,6 +169,8 @@ Again, according to `docker-compose.yml` this service is called `memcached` and 
 therefore the location of the cache server is `memcached:11211`.
 
 # <a name="fabric"/>Fabric
+
+[Commit ca745c8335463f3ab015db335575891466b321c7](https://github.com/janbrrr/django-polls-improved/commit/ca745c8335463f3ab015db335575891466b321c7)
 
 [Fabric](http://www.fabfile.org/) is a library for remote shell execution via SSH. We can use it to automate tasks
 like setting up a machine, deployment and more.
