@@ -10,6 +10,7 @@ The improvements mainly concern the setup.
 - [Pre-commit hooks](#pre-commit-hooks)
 - [Sphinx documentation](#sphinx-docs)
 - [Docker and Docker Compose](#docker)
+- [Fabric for remote execution](#fabric)
 
 # <a name="requirements-and-installation"/>Requirements & Installation
 
@@ -160,3 +161,25 @@ The official memcached image already contains everything, so no further files ar
 The only thing we have to do is to configure `mysite/settings/production.py` to use the correct host.
 Again, according to `docker-compose.yml` this service is called `memcached` and it exposes the (default) `11211` port,
 therefore the location of the cache server is `memcached:11211`.
+
+# <a name="fabric"/>Fabric
+
+[Fabric](http://www.fabfile.org/) is a library for remote shell execution via SSH. We can use it to automate tasks
+like setting up a machine, deployment and more.
+
+This example is tailored to using a Raspberry Pi 3 with Raspbian Stretch as production machine.
+First you have to configure the production machine at the top of `fabfile.py` (the `prod` host).
+Additionally, you have to add the production address to the `ALLOWED_HOSTS` in `mysite/settings/production.py`.
+
+The tasks are defined `fabfile.py` and can be listed with the command `fab --list`.
+The way the tasks are implemented you have to run them as ``fab -H <host> <cmd>`` where ``<host>``
+is either ``local`` or ``prod``. For example, to run the deploy task locally type `fab -H local deploy`.
+The following tasks are implemented:
+
+- `setup`: Sets up the Raspberry Pi from scratch. Installs Python 3.7, Docker, Docker Compose and clones the repository.
+- `create-certificate`: Creates a self-signed certificate and places it in the location expected by the `Dockerfile`
+- `deploy`: Pulls the latest changes from the repository, builds and starts everything
+- `create-superuser`: Runs `python manage.py createsuper` in the web service
+- `status`: Displays the status of the services
+- `logs`: Displays the logs of the services
+- `stop`: Stops the services

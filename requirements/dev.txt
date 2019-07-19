@@ -1,1 +1,2 @@
 pre-commit
+fabric==2.4.0
